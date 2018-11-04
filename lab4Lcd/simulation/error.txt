@@ -1,0 +1,4 @@
+###### source/LCD_tb.vhd(314):       slave_rd            => open,
+# ** Error: source/LCD_tb.vhd(314): (vcom-1035) Formal port "slave_rd" has OPEN or no actual associated with it.
+###### source/LCD_tb.vhd(329): end testbench;
+# ** Error: source/LCD_tb.vhd(329): VHDL Compiler exiting

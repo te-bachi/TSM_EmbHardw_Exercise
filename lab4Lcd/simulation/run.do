@@ -6,7 +6,8 @@
 vlib work
 
 # 2) Compile the half adder
-set VCOM_OPTIONS {-2008 -explicit -time -check_synthesis -rangecheck -source -work work}
+# set VCOM_OPTIONS {-2008 -explicit -time -check_synthesis -rangecheck -source -work work}
+set VCOM_OPTIONS {-2008}
 eval vcom $VCOM_OPTIONS ../source/lcd_ctrl_ili9341.vhdl
 eval vcom $VCOM_OPTIONS ../source/lcd_ctrl_av_slave.vhdl
 eval vcom $VCOM_OPTIONS source/LCD_tb.vhd

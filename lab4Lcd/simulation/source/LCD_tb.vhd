@@ -13,7 +13,7 @@ architecture testbench of LCD_tb is
     signal test_sig                 : std_logic                     := '0';
 
     signal clk_sti                  : std_logic                     := '0';
-    signal reset_sti                : std_logic                     := '1';
+    signal reset_sti                : std_logic                     := '0';
     signal avalon_address_sti       : std_logic_vector(1 downto 0)  := (others => '0');
     signal avalon_cs_sti            : std_logic                     := '0';
     signal avalon_rd_sti            : std_logic                     := '0';
@@ -182,7 +182,6 @@ begin
             avalon_rd_sti         <= '0';
             avalon_wr_sti         <= avalon_wr_s;
             avalon_write_data_sti <= avalon_write_data_s;
-            avalon_read_data_sti  <= (others => '0');
         end;
 
         variable seed1, seed2   : positive;
@@ -246,7 +245,7 @@ begin
     -- RESET PROCESS -----------------------------------------------------------
     process
     begin
-        wait for CLK_PERIOD;
+        --wait for CLK_PERIOD;
         reset_sti <= '0';
 
         wait for CLK_PERIOD*2;

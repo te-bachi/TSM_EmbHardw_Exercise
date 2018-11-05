@@ -67,26 +67,12 @@ ARCHITECTURE rtl OF lcd_ctrl_av_slave IS
     constant    bit_IM0             : integer   := 0;
     constant    bit_RDX             : integer   := 1;
 
-    TYPE state_t IS (
-        STATE_IDLE,
-        STATE_WAITBUSY,
-        STATE_INITREAD,
-        STATE_WAITREAD,
-        STATE_RELEASE
-    );
-
     SIGNAL s_WriteReadBar           : std_logic;
     SIGNAL s_StartSendReceive       : std_logic;
     SIGNAL s_CommandBarData         : std_logic;
-    SIGNAL s_busy                   : std_logic;
     SIGNAL control_reg              : std_logic_vector(15 DOWNTO 0);
     SIGNAL control_next             : std_logic_vector(15 DOWNTO 0);
     SIGNAL s_LCD_data_out           : std_logic_vector(15 DOWNTO 0);
-    SIGNAL s_current_state          : state_t;
-    SIGNAL s_next_state             : state_t;
-    SIGNAL s_reset_display          : std_logic;
-
-    signal s_TEST                   : std_logic;
     signal s_data                   : std_logic_vector(15 DOWNTO 0);
 BEGIN
 
@@ -94,11 +80,14 @@ BEGIN
 -- In this section the avalon slave signals are defined
 --------------------------------------------------------------------------------
 
+    avalon_read_data <= (others => '0');
+    control_reg <= control_next;
+    
     pRegWr : process(clk, rst_n)
     begin
         -- async RESET
         if rst_n = '0' then
-            control_reg <= (others => '0');
+            control_next <= (others => '0');
 
         -- rising clock
         elsif rising_edge(clk) then
@@ -106,7 +95,7 @@ BEGIN
                 case avalon_address is
                     when addr_command   => s_data <= avalon_write_data;
                     when addr_data      => s_data <= avalon_write_data;
-                    when addr_control   => control_reg <= avalon_write_data;
+                    when addr_control   => control_next <= avalon_write_data;
                     when others         => null;
                 end case;
             end if;
@@ -138,6 +127,11 @@ BEGIN
 --------------------------------------------------------------------------------
 --- In this section all components are connected
 --------------------------------------------------------------------------------
+
+    s_StartSendReceive <= '0';
+    s_CommandBarData <= '0';
+    s_WriteReadBar <= '0';
+    s_LCD_data_out <= (others => '0');
 
     ili9341 : entity work.lcd_ctrl_ili9341
         PORT MAP (

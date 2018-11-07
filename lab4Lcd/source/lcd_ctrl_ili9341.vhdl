@@ -70,10 +70,13 @@ BEGIN
     -- Next-State Logic Process ------------------------------------------------
     NSL: process(state_reg)
     begin
+        -- Default case
         state_next <= state_reg;
 
         case state_reg is
-            when STATE_IDLE     => state_next <= STATE_WAITBUSY;
+            when STATE_IDLE =>
+                state_next <= STATE_WAITBUSY;
+
             when STATE_WAITBUSY => state_next <= STATE_INITREAD;
             when STATE_INITREAD => state_next <= STATE_WAITREAD;
             when STATE_WAITREAD => state_next <= STATE_RELEASE;

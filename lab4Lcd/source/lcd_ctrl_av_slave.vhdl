@@ -68,12 +68,15 @@ ARCHITECTURE rtl OF lcd_ctrl_av_slave IS
     constant    bit_RDX             : integer   := 1;
 
     SIGNAL s_WriteReadBar           : std_logic;
-    SIGNAL s_StartSendReceive       : std_logic;
+    SIGNAL s_StartSend              : std_logic;
     SIGNAL s_CommandBarData         : std_logic;
+    SIGNAL s_WriteRedBar            : std_logic;
     SIGNAL control_reg              : std_logic_vector(15 DOWNTO 0);
     SIGNAL control_next             : std_logic_vector(15 DOWNTO 0);
     SIGNAL s_LCD_data_out           : std_logic_vector(15 DOWNTO 0);
-    signal s_data                   : std_logic_vector(15 DOWNTO 0);
+
+    signal s_data_reg               : std_logic_vector(15 DOWNTO 0);
+    signal s_data_next              : std_logic_vector(15 DOWNTO 0);
 BEGIN
 
 --------------------------------------------------------------------------------
@@ -81,25 +84,50 @@ BEGIN
 --------------------------------------------------------------------------------
 
     avalon_read_data <= (others => '0');
-    control_reg <= control_next;
-    
-    pRegWr : process(clk, rst_n)
+    s_CommandBarData <= '0';
+    s_WriteReadBar <= '0';
+    s_LCD_data_out <= (others => '0');
+
+    REG : process(clk, rst_n)
     begin
         -- async RESET
         if rst_n = '0' then
+            -- next <= '0'
             control_next <= (others => '0');
+            s_data_next  <= (others => '0');
 
         -- rising clock
         elsif rising_edge(clk) then
+
+
+            -- defaut: reg <= next
+            s_StartSend <= '0';
+            control_reg <= control_next;
+            s_data_reg  <= s_data_next;
+
             if avalon_write = '1' then
                 case avalon_address is
-                    when addr_command   => s_data <= avalon_write_data;
-                    when addr_data      => s_data <= avalon_write_data;
-                    when addr_control   => control_next <= avalon_write_data;
-                    when others         => null;
+                    when addr_command =>
+                        s_data_next <= avalon_write_data;
+                        s_StartSend <= '1';
+
+                    when addr_data =>
+                        s_data_next <= avalon_write_data;
+
+                    when addr_control =>
+                        control_next <= avalon_write_data;
+
+                    when others =>
+                        null;
+
                 end case;
             end if;
         end if;
+    end process;
+
+    NSL: process()
+    begin
+
     end process;
 
 
@@ -128,20 +156,15 @@ BEGIN
 --- In this section all components are connected
 --------------------------------------------------------------------------------
 
-    s_StartSendReceive <= '0';
-    s_CommandBarData <= '0';
-    s_WriteReadBar <= '0';
-    s_LCD_data_out <= (others => '0');
-
     ili9341 : entity work.lcd_ctrl_ili9341
         PORT MAP (
             clk                     => clk,
             rst_n                   => rst_n,
             LCD_RDX_n               => control_reg(bit_RDX),
-            StartSendReceive        => s_StartSendReceive,
+            StartSendReceive        => s_StartSend,
             CommandBarData          => s_CommandBarData,
             LCD_IM0                 => control_reg(bit_IM0),
-            WriteReadBar            => s_WriteReadBar,
+            WriteReadBar            => s_WriteRedBar,
             DataToSend              => avalon_write_data(15 DOWNTO 0),
             DataReceived            => s_LCD_data_out,
             busy                    => avalon_wait_request,
